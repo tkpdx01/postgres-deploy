@@ -19,11 +19,19 @@ Write-Host "`n[2/3] Downloading PostgreSQL 16.11 packages..." -ForegroundColor G
 # PostgreSQL 16.11 for Ubuntu 24.04 (latest as of Dec 2024)
 # Note: %2B in URL = + sign (URL encoded)
 $PG_PACKAGES = @(
+    # PostgreSQL core packages from PGDG
     @{name="postgresql-16_16.11-1.pgdg24.04+1_amd64.deb"; url="https://apt.postgresql.org/pub/repos/apt/pool/main/p/postgresql-16/postgresql-16_16.11-1.pgdg24.04%2B1_amd64.deb"}
     @{name="postgresql-client-16_16.11-1.pgdg24.04+1_amd64.deb"; url="https://apt.postgresql.org/pub/repos/apt/pool/main/p/postgresql-16/postgresql-client-16_16.11-1.pgdg24.04%2B1_amd64.deb"}
-    @{name="libpq5_16.11-1.pgdg24.04+1_amd64.deb"; url="https://apt.postgresql.org/pub/repos/apt/pool/main/p/postgresql-16/libpq5_16.11-1.pgdg24.04%2B1_amd64.deb"}
     @{name="postgresql-common_287.pgdg24.04+1_all.deb"; url="https://apt.postgresql.org/pub/repos/apt/pool/main/p/postgresql-common/postgresql-common_287.pgdg24.04%2B1_all.deb"}
     @{name="postgresql-client-common_287.pgdg24.04+1_all.deb"; url="https://apt.postgresql.org/pub/repos/apt/pool/main/p/postgresql-common/postgresql-client-common_287.pgdg24.04%2B1_all.deb"}
+)
+
+# Ubuntu 24.04 system dependencies (from archive.ubuntu.com)
+# libpq5 is included in Ubuntu's base PostgreSQL 16 package
+$UBUNTU_BASE = "http://archive.ubuntu.com/ubuntu/pool/main"
+$SYSTEM_DEPS = @(
+    @{name="ssl-cert_1.1.2ubuntu1_all.deb"; url="$UBUNTU_BASE/s/ssl-cert/ssl-cert_1.1.2ubuntu1_all.deb"}
+    @{name="libpq5_16.11-0ubuntu0.24.04.1_amd64.deb"; url="$UBUNTU_BASE/p/postgresql-16/libpq5_16.11-0ubuntu0.24.04.1_amd64.deb"}
 )
 
 foreach ($pkg in $PG_PACKAGES) {
@@ -33,6 +41,17 @@ foreach ($pkg in $PG_PACKAGES) {
         Write-Host "    OK" -ForegroundColor Green
     } catch {
         Write-Host "    FAILED: $($_.Exception.Message)" -ForegroundColor Red
+    }
+}
+
+Write-Host "`nDownloading system dependencies..." -ForegroundColor Green
+foreach ($pkg in $SYSTEM_DEPS) {
+    Write-Host "  Downloading: $($pkg.name)"
+    try {
+        Invoke-WebRequest -Uri $pkg.url -OutFile "$PackageDir\$($pkg.name)"
+        Write-Host "    OK" -ForegroundColor Green
+    } catch {
+        Write-Host "    FAILED (may be pre-installed on target): $($_.Exception.Message)" -ForegroundColor Yellow
     }
 }
 
