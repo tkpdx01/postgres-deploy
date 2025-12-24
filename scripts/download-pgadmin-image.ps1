@@ -3,8 +3,10 @@
 
 $ErrorActionPreference = "Stop"
 $PackageDir = "$PSScriptRoot\..\packages"
+$PGADMIN_VERSION = "9.11.0"
 
 Write-Host "=== 下载 pgAdmin 4 Docker 镜像 ===" -ForegroundColor Cyan
+Write-Host "版本: $PGADMIN_VERSION" -ForegroundColor Yellow
 
 # 检查 Docker
 try {
@@ -15,10 +17,10 @@ try {
 }
 
 Write-Host "拉取 pgAdmin 4 镜像..." -ForegroundColor Green
-docker pull dpage/pgadmin4:latest
+docker pull "dpage/pgadmin4:$PGADMIN_VERSION"
 
 Write-Host "导出镜像到文件..." -ForegroundColor Green
-docker save dpage/pgadmin4:latest -o "$PackageDir\pgadmin4.tar"
+docker save "dpage/pgadmin4:$PGADMIN_VERSION" -o "$PackageDir\pgadmin4.tar"
 
 $size = (Get-Item "$PackageDir\pgadmin4.tar").Length / 1MB
 Write-Host "完成! 镜像大小: $([math]::Round($size, 2)) MB" -ForegroundColor Cyan
