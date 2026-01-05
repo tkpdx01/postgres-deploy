@@ -100,10 +100,14 @@ cp "$PG_CONF/pg_hba.conf" "$PG_CONF/pg_hba.conf.bak"
 
 # 设置端口
 sed -i "s/^#\?port = .*/port = $PG_PORT/" "$PG_CONF/postgresql.conf"
-sed -i "s/^#\?listen_addresses = .*/listen_addresses = 'localhost'/" "$PG_CONF/postgresql.conf"
+sed -i "s/^#\?listen_addresses = .*/listen_addresses = '0.0.0.0'/" "$PG_CONF/postgresql.conf"
+
+# 允许远程连接 (md5 密码认证)
+echo "# 允许远程连接" >> "$PG_CONF/pg_hba.conf"
+echo "host    all    all    0.0.0.0/0    md5" >> "$PG_CONF/pg_hba.conf"
 
 log_info "  端口: $PG_PORT"
-log_info "  监听: localhost"
+log_info "  监听: 0.0.0.0 (允许远程连接)"
 
 # 应用自定义配置
 if [ -f "$CONFIG_DIR/postgresql.conf" ]; then
@@ -193,7 +197,7 @@ log_info "  PostgreSQL $PG_VERSION 安装完成!"
 log_info "=========================================="
 echo ""
 log_info "连接信息:"
-log_info "  主机: localhost"
+log_info "  主机: 0.0.0.0 (允许任意IP连接)"
 log_info "  端口: $PG_PORT"
 log_info "  超级用户: postgres"
 if [ -n "$APP_USER" ]; then
